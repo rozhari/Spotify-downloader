@@ -31,7 +31,7 @@ app.get("/spotify", async (req, res) => {
       return res.json({ error: "Invalid Spotify URL" });
     }
 
-    // Just use ID as query for now (since no Spotify API key)
+    // Search YouTube with the Spotify ID (title usually matched)
     const search = await yts(spotifyId);
     if (!search.videos || search.videos.length === 0) {
       return res.json({ error: "No matching song found!" });
@@ -54,7 +54,7 @@ app.get("/spotify", async (req, res) => {
   }
 });
 
-// Download endpoint
+// Download endpoint (fixed)
 app.get("/download", async (req, res) => {
   const yturl = req.query.url;
   if (!yturl || !ytdl.validateURL(yturl)) {
@@ -62,11 +62,21 @@ app.get("/download", async (req, res) => {
   }
 
   try {
-    res.header("Content-Disposition", 'attachment; filename="song.mp3"');
-    ytdl(yturl, { filter: "audioonly", quality: "highestaudio" }).pipe(res);
+    const info = await ytdl.getInfo(yturl);
+    const title = info.videoDetails.title.replace(/[^\w\s]/gi, "_");
+
+    res.header("Content-Disposition", `attachment; filename="${title}.mp3"`);
+    ytdl.downloadFromInfo(info, {
+      filter: "audioonly",
+      quality: "highestaudio",
+      highWaterMark: 1 << 25 // bigger buffer to prevent crash
+    }).pipe(res);
   } catch (err) {
     console.error("Download error:", err);
-    res.json({ error: "Download failed!" });
+    res.json({
+      error: "Download failed! YouTube blocked the request.",
+      youtube: yturl
+    });
   }
 });
 
