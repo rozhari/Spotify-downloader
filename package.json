@@ -1,0 +1,14 @@
+{
+  "name": "spotify-downloader",
+  "version": "1.0.0",
+  "description": "Spotify to MP3 API",
+  "main": "api.js",
+  "scripts": {
+    "start": "node api.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "yt-search": "^2.10.4",
+    "ytdl-core": "^4.11.5"
+  }
+}
