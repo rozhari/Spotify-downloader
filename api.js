@@ -5,12 +5,12 @@ const ytdl = require("ytdl-core");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Home
+// Home route
 app.get("/", (req, res) => {
   res.send("🎵 Spotify Downloader API Running ✅");
 });
 
-// Spotify -> YouTube Search
+// Spotify → YouTube search
 app.get("/spotify", async (req, res) => {
   const url = req.query.url;
   if (!url) return res.json({ error: "No Spotify URL provided!" });
@@ -31,7 +31,6 @@ app.get("/spotify", async (req, res) => {
       return res.json({ error: "Invalid Spotify URL" });
     }
 
-    // Search YouTube with the Spotify ID (title usually matched)
     const search = await yts(spotifyId);
     if (!search.videos || search.videos.length === 0) {
       return res.json({ error: "No matching song found!" });
@@ -54,7 +53,7 @@ app.get("/spotify", async (req, res) => {
   }
 });
 
-// Download endpoint (fixed)
+// Download YouTube as MP3
 app.get("/download", async (req, res) => {
   const yturl = req.query.url;
   if (!yturl || !ytdl.validateURL(yturl)) {
@@ -62,14 +61,15 @@ app.get("/download", async (req, res) => {
   }
 
   try {
-    const info = await ytdl.getInfo(yturl);
+    const info = await ytdl.getInfo(yturl, { lang: "en" });
     const title = info.videoDetails.title.replace(/[^\w\s]/gi, "_");
 
     res.header("Content-Disposition", `attachment; filename="${title}.mp3"`);
     ytdl.downloadFromInfo(info, {
       filter: "audioonly",
       quality: "highestaudio",
-      highWaterMark: 1 << 25 // bigger buffer to prevent crash
+      requestOptions: { headers: { "User-Agent": "Mozilla/5.0" } },
+      highWaterMark: 1 << 25
     }).pipe(res);
   } catch (err) {
     console.error("Download error:", err);
@@ -80,7 +80,7 @@ app.get("/download", async (req, res) => {
   }
 });
 
-// Start Server
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Spotify Downloader API running on http://localhost:${PORT}`);
 });
