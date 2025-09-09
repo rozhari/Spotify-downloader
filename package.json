@@ -1,7 +1,7 @@
 {
   "name": "spotify-downloader",
   "version": "1.0.0",
-  "description": "Spotify to MP3 Downloader API",
+  "description": "Spotify to MP3 Downloader API (play-dl version)",
   "main": "api.js",
   "scripts": {
     "start": "node api.js"
@@ -9,7 +9,7 @@
   "dependencies": {
     "express": "^4.19.2",
     "yt-search": "^2.10.4",
-    "ytdl-core": "^4.11.5"
+    "play-dl": "^1.9.7"
   },
   "engines": {
     "node": "22.x"
